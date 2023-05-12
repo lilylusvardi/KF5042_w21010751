@@ -1,0 +1,57 @@
+%naive bayes algorithm - can't debug the errors 
+
+%database 
+data = readtable('C:\Users\w21010751\OneDrive - Northumbria University - Production Azure AD\Intelligent Systems\DATASET\tripadvisor_hotel_reviews.csv\tripadvisor_hotel_reviews.csv'); 
+
+X = data(:, 1:end-1);
+y = data(:, end);
+%extracting the data so it can be in a .mat file 
+X = table2array(X);
+y = table2array(y);
+
+% data as a .mat file 
+mat_file = 'tripadvisor_hotel_reviews.mat';
+save(mat_file, 'X', 'y');
+load('tripadvisor_hotel_reviews.mat'); 
+
+Reviews = data.Review;
+Rating = data.Rating;
+
+%pre pocesing the text
+reviews = preprocessText(Reviews);
+
+%BoW
+bag = bagOfWords(reviews);
+
+%testing and training sets
+cvp = cvpartition(Rating, 'Holdout', 0.2);
+ReviewTrain = preprocessedReviews(cvp.training);
+ReviewTest = preprocessedReviews(cvp.test);
+
+%training the Naive Bayes classifier
+classifier = trainClassifier(ReviewTrain, Rating);
+
+%testing the classifier on the testing set
+predictedRating = predict(classifier, ReviewTest);
+
+%accuracy
+accuracy = sum(predictedRating == Rating) / numel(Rating);
+disp(['Accuracy: ', num2str(accuracy)]);
+
+function reviews = preprocessText(Reviews)
+
+% Tokenize the text.
+reviews = tokenizedDocument(Reviews);
+
+% Convert to lowercase.
+reviews = lower(reviews);
+
+% Erase punctuation.
+reviews = erasePunctuation(reviews);
+
+end
+%function to do the training of the Naive Bayes classifier
+function classifier = trainClassifier(reviews, Rating)
+    bag = bagOfWords(reviews);
+    classifier = trainClassifier(bag, Rating);
+end
