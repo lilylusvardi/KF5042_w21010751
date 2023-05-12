@@ -1,0 +1,30 @@
+% can't debug issue with word2vec 
+%database 
+data = readtable('C:\Users\w21010751\OneDrive - Northumbria University - Production Azure AD\Intelligent Systems\DATASET\tripadvisor_hotel_reviews.csv\\tripadvisor_hotel_reviews.csv'); 
+
+
+numWords = size(data,1);
+cvp = cvpartition(numWords,'HoldOut',0.01); 
+dataTrain = data(training(cvp),:); 
+dataTest = data(test(cvp),:);
+
+%Convert the words in the training data to word vectors using word2vec. 
+ratingTrain = dataTrain.Rating;
+XTrain = word2vec(emb,ratingTrain);
+YTrain = dataTrain.Label;
+
+%SVM Sentiment Classifier
+
+model = fitcsvm(XTrain, YTrain);
+
+%test Classifier
+ratingTest = dataTest.Rating;
+XTest = word2vec(emb,ratingTest); 
+YTest = dataTest.Label;
+
+%predict the sentiment labels of the test word vectors. 
+[YPred,scores] = predict(model,XTest);
+
+%visualize the classification accuracy in a confusion matrix. 
+figure
+confusionchart(YTest,YPred, 'ColumnSummary','column-normalized');
